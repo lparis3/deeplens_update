@@ -240,19 +240,19 @@ def Halo_constructor(DM_type, redshifts):
   
   if DM_Type == 'CDM':
       lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle=CDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host)
-      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle
+      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle,m_Host
 
   elif DM_Type == 'WDM':
       lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, log_mc, arcsecond_opening_angle =WDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host)
-      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, log_mc, arcsecond_opening_angle
+      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, log_mc, arcsecond_opening_angle,m_Host
 
   elif DM_Type == 'SIDM':
       lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, mass_ranges_subhalos, mass_ranges_field_halos, probabilities_subhalos, probabilities_field_halos, arcsecond_opening_angle=SIDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host)
-      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, mass_ranges_subhalos, mass_ranges_field_halos, probabilities_subhalos, probabilities_field_halos, arcsecond_opening_angle
+      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, mass_ranges_subhalos, mass_ranges_field_halos, probabilities_subhalos, probabilities_field_halos, arcsecond_opening_angle,m_Host
 
   elif DM_Type == 'Axion':
       lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,M_axion,arcsecond_opening_angle=Axion_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host,M_axion=M_axion),M_axion
-      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,M_axion,arcsecond_opening_angle
+      return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,M_axion,arcsecond_opening_angle, m_Host
 
 
  
