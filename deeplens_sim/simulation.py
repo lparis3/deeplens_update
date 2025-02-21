@@ -44,7 +44,7 @@ def dl_sim(DM_Type,Instrument):
     #2.Observational data extraction for input images 
     from deeplens_sim.obs_data_extraction import extraction 
     
-    source_images,source_mag,deflector_images,deflector_mag, redshifts = extraction()  
+    source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr = extraction()  
 
 
     #3.  Construct host halo, sub halos, and field halos 
