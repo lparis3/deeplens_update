@@ -45,7 +45,8 @@ def dl_sim(DM_Type,Instrument):
     from deeplens_sim.obs_data_extraction import extraction 
     
     source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr = extraction()  
-
+    zdeflector = redshifts[0]
+    zsource = redshifts[1]
 
     #3.  Construct host halo, sub halos, and field halos 
     from deeplens_sim.halo_creation import Halo_constructor
@@ -149,11 +150,8 @@ def dl_sim(DM_Type,Instrument):
     img_nss = (img_nss_g,img_nss_r,img_nss_i)
     sns_diff = (sns_diff_g,sns_diff_r,sns_diff_i)
 
-    end5 = time.time()
-    print(f'Step 5 took {end5-start5} secs')
 
     #Prepare Outputs
-    start6 = time.time()
     if DM_Type == 'CDM':
         instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
