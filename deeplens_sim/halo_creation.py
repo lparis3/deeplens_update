@@ -1,8 +1,8 @@
 #Construct host halo, sub halos, and field halos 
-    import pyHalo
-    import pyHalo.preset_models
-    from astropy import units as u
-    from astropy.constants import G, c, M_sun
+import pyHalo
+import pyHalo.preset_models
+from astropy import units as u
+from astropy.constants import G, c, M_sun
 
 def Halo_constructor(DM_type, redshifts):
   
