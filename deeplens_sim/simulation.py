@@ -34,14 +34,17 @@ def dl_sim(DM_Type,Instrument):
             return des
     
     instrument_param = instrument_config(Instrument=Instrument)
+    band_g, band_r, band_i = instrument_param
+    kwargs_g_band = band_g.kwargs_single_band()
+    kwargs_r_band = band_r.kwargs_single_band()
+    kwargs_i_band = band_i.kwargs_single_band()
+    bands = [kwargs_g_band,kwargs_r_band,kwargs_i_band]
 
     
     #2.Observational data extraction for input images 
     from deeplens_sim.obs_data_extraction import extraction 
     
     source_images,source_mag,deflector_images,deflector_mag, redshifts = extraction()  
-
-    print('Lens and Source chosen!')
 
 
     #3.  Construct host halo, sub halos, and field halos 
