@@ -78,12 +78,6 @@ def dl_sim(DM_Type,Instrument):
     
     source_pos_xx,source_pos_yy = np.random.uniform(-Macro_kwargs_list[0]['theta_E']*0.3, Macro_kwargs_list[0]['theta_E']*0.3), np.random.uniform(-Macro_kwargs_list[0]['theta_E']*0.3, Macro_kwargs_list[0]['theta_E']*0.3)
 
-    band_g, band_r, band_i = instrument_param
-    kwargs_g_band = band_g.kwargs_single_band()
-    kwargs_r_band = band_r.kwargs_single_band()
-    kwargs_i_band = band_i.kwargs_single_band()
-    bands = [kwargs_g_band,kwargs_r_band,kwargs_i_band]
-
     def kwargs_light_mag(posxx,posyy,pixel_scale):
         '''Returns kwargs_single_band values for g,r,and i while taking into account intrument of simulated image.'''
         # g-band
@@ -111,7 +105,8 @@ def dl_sim(DM_Type,Instrument):
 
         return kwargs_lens_light_mag, kwargs_source_mag
 
-    kwargs_lens_light_mag, kwargs_source_mag = kwargs_light_mag(source_pos_xx,source_pos_yy,kwargs_b_band['pixel_scale'])
+    hsc_pix_scale = 0.168
+    kwargs_lens_light_mag, kwargs_source_mag = kwargs_light_mag(source_pos_xx,source_pos_yy,hsc_pix_scale)
 
     print('Ready to simulate!')
 
@@ -124,9 +119,9 @@ def dl_sim(DM_Type,Instrument):
     def simulate(kwargs_numerics,band_kwargs,lens_light_kwargs,source_light_kwargs,lens_nonlight_kwargs,kwargs_model_):
         numpix = 64
 
-        sim_g = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[0], kwargs_model=kwargs_model)
-        sim_r = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[1], kwargs_model=kwargs_model)
-        sim_i = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[2], kwargs_model=kwargs_model)
+        sim_g = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[0], kwargs_model=kwargs_model_)
+        sim_r = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[1], kwargs_model=kwargs_model_)
+        sim_i = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[2], kwargs_model=kwargs_model_)
 
         imSim_g = sim_g.image_model_class(kwargs_numerics)
         imSim_r = sim_r.image_model_class(kwargs_numerics)
@@ -140,62 +135,68 @@ def dl_sim(DM_Type,Instrument):
         image_r = imSim_r.image(lens_nonlight_kwargs, kwargs_source_r, kwargs_lens_light_r,point_source_add=False,lens_light_add=True)
         image_i = imSim_i.image(lens_nonlight_kwargs, kwargs_source_i, kwargs_lens_light_i,point_source_add=False,lens_light_add=True)
 
+        return image_g,image_r,image_i
 
-        img = np.zeros((image_g.shape[0], image_g.shape[1], 3), dtype=float)
-       
-        img[:,:,0] = image_g
-        img[:,:,1] = image_r
-        img[:,:,2] = image_i
-        data_class = sim_g.data_class
-        return img, data_class
 
-    img, coords = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=lens_kwargs_list,kwargs_model_=kwargs_model)
-    img_nss,coords = simulate(kwargs_numerics,band_kwargs=bands,lens_light_kwargs = kwargs_lens_light_mag, source_light_kwargs = kwargs_source_mag,lens_nonlight_kwargs = lens_kwargs_list, kwargs_model=kwargs_model_nss)
+    img_g,img_r,img_i = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=lens_kwargs_list,kwargs_model_=kwargs_model)
+    img_nss_g,img_nss_r,img_nss_i = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=Macro_kwargs_list,kwargs_model_=kwargs_model_nss)
 
-    sns_diff = img/img_nss
+    sns_diff_g = img_g / img_nss_g
+    sns_diff_r = img_r / img_nss_r
+    sns_diff_i = img_i / img_nss_i
+
+    img = (img_g,img_r,img_i)
+    img_nss = (img_nss_g,img_nss_r,img_nss_i)
+    sns_diff = (sns_diff_g,sns_diff_r,sns_diff_i)
+
+    end5 = time.time()
+    print(f'Step 5 took {end5-start5} secs')
 
     #Prepare Outputs
+    start6 = time.time()
     if DM_Type == 'CDM':
         instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle}
-        host_defl_dict = {'zdeflector':zdeflector,'host_mass':Host_mass,'host_slope':Host_slope,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
+        host_defl_dict = {'zdeflector':zdeflector,'mag_dfr':deflector_mag,'host_mass':m_Host,'host_slope':slope_Host,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
         defl_dict = {'subhalos':sub_defl_dict,'host':host_defl_dict,'ext_shear':ext_shear_dict}
         image_dict = {'image':img,'image_no_sub':img_nss,'contrast':sns_diff}
-        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict}
+        raw = {'source': raw_src, 'deflector':raw_dfr}
+        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict,'raw':raw}
 
     if DM_Type == 'Axion':
         instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle, 'axion_mass':M_axion}
-        host_defl_dict = {'zdeflector':zdeflector,'host_mass':Host_mass,'host_slope':Host_slope,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
+        host_defl_dict = {'zdeflector':zdeflector,'mag_dfr':deflector_mag,'host_mass':m_Host,'host_slope':slope_Host,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']]),'flucs':[flucs_shape,flucs_args]}
         defl_dict = {'subhalos':sub_defl_dict,'host':host_defl_dict,'ext_shear':ext_shear_dict}
         image_dict = {'image':img,'image_no_sub':img_nss,'contrast':sns_diff}
-        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict}
+        raw = {'source': raw_src, 'deflector':raw_dfr}
+        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict, 'raw':raw}
     
     if DM_Type == 'WDM':
         instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle,'supressed_mass':log_mc}
-        host_defl_dict = {'zdeflector':zdeflector,'host_mass':Host_mass,'host_slope':Host_slope,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
+        host_defl_dict = {'zdeflector':zdeflector,'mag_dfr':deflector_mag,'host_mass':m_Host,'host_slope':slope_Host,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
         defl_dict = {'subhalos':sub_defl_dict,'host':host_defl_dict,'ext_shear':ext_shear_dict}
         image_dict = {'image':img,'image_no_sub':img_nss,'contrast':sns_diff}
-        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict}
+        raw = {'source': raw_src, 'deflector':raw_dfr}
+        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict,'raw':raw}
 
     if DM_Type == 'SIDM':
         instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle,'subhalo_mass_ranges':mass_ranges_subhalos,'field_halos_mass_ranges':mass_ranges_field_halos,'prob_subhalo':probabilities_subhalos,'prob_field_halo':probabilities_field_halos}
-        host_defl_dict = {'zdeflector':zdeflector,'host_mass':Host_mass,'host_slope':Host_slope,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
+        host_defl_dict = {'zdeflector':zdeflector,'mag_dfr':deflector_mag,'host_mass':m_Host,'host_slope':slope_Host,'theta_E':Macro_kwargs_list[0]['theta_E'],'ellipticity':np.array([Macro_kwargs_list[0]['e1'],Macro_kwargs_list[0]['e2']])}
         defl_dict = {'subhalos':sub_defl_dict,'host':host_defl_dict,'ext_shear':ext_shear_dict}
         image_dict = {'image':img,'image_no_sub':img_nss,'contrast':sns_diff}
-        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict}
-
-    print('Done!')
+        raw = {'source': raw_src, 'deflector':raw_dfr}
+        output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict, 'raw': raw}
     return output
 
 
