@@ -1,6 +1,7 @@
 #Construct host halo, sub halos, and field halos 
 import pyHalo
 import pyHalo.preset_models
+import numpy as np
 from astropy import units as u
 from astropy.constants import G, c, M_sun
 
