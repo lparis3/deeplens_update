@@ -6,7 +6,12 @@ from astropy import units as u
 from astropy.constants import G, c, M_sun
 
 def Halo_constructor(DM_type, redshifts):
-  
+
+  if Interlopers == True:
+        LOS = 1.0
+    else:
+        LOS = 0.0
+
   def Host_mass(mean = 13, sigma =1.0):
       '''Samples log of host mass from normal distribution'''
       M_host = np.random.normal(loc = mean,scale = sigma,size =1)
