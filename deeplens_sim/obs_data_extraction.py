@@ -3,7 +3,7 @@ from scipy.ndimage import gaussian_filter
 import numpy as np
 from scipy.ndimage import shift
 
-def extraction():
+def extraction(z_limits):
     '''Sample GalaxiesML Dataset for sources and deflectors.'''
  #Necessary functions for processing:
     def center_extraction(image):
