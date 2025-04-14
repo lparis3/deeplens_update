@@ -163,7 +163,6 @@ def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):
 
 
     #Prepare Outputs
-    start6 = time.time()
     if DM_Type == 'CDM':
         instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type'],'exposure_time':tot_exp_times}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
