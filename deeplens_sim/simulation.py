@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):):
+def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):
     '''Adaptive interface to simulate mock lensing images.'''
     
     #1. Configure instrument specific parameters
