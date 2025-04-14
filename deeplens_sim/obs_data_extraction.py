@@ -1,11 +1,12 @@
 import h5py
 from scipy.ndimage import gaussian_filter
 import numpy as np
+from scipy.ndimage import shift
 
 def extraction():
     '''Sample GalaxiesML Dataset for sources and deflectors.'''
  #Necessary functions for processing:
-     def center_extraction(image):
+    def center_extraction(image):
         brightest_pixel_values = np.array([np.max(image[0,:,:]), np.max(image[1,:,:]),np.max(image[2,:,:])])
         brightest_band = brightest_pixel_values.argmax()
         center_rows_columns = np.unravel_index(image[brightest_band,:,:].argmax(),image[brightest_band,:,:].shape)
@@ -48,7 +49,7 @@ def extraction():
         masked_image = band_image * mask
         return masked_image
 
-     def mag_booster(source_image,deflector_image,source_mag, deflector_mag):
+    def mag_booster(source_image,deflector_image,source_mag, deflector_mag):
         '''(maybe) Boosts the magnitude of lens until brightest pixel is brighter than corresponding pixel of deflector'''
         new_mag = source_mag
         if np.max(source_image)>deflector_image[np.unravel_index(np.argmax(source_image), np.shape(source_image))]:
