@@ -44,7 +44,7 @@ def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):
     #2.Observational data extraction for input images 
     from deeplens_sim.obs_data_extraction import extraction 
     
-    source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr = extraction()  
+    source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr = extraction(z_limits)  
     zdeflector = redshifts[0]
     zsource = redshifts[1]
 
