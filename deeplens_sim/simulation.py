@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def dl_sim(DM_Type,Instrument):
+def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):):
     '''Adaptive interface to simulate mock lensing images.'''
     
     #1. Configure instrument specific parameters
@@ -118,7 +118,7 @@ def dl_sim(DM_Type,Instrument):
     kwargs_numerics = {'point_source_supersampling_factor': 1}
     
     def simulate(kwargs_numerics,band_kwargs,lens_light_kwargs,source_light_kwargs,lens_nonlight_kwargs,kwargs_model_):
-        numpix = 64
+        numpix = 128
 
         sim_g = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[0], kwargs_model=kwargs_model_)
         sim_r = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[1], kwargs_model=kwargs_model_)
@@ -132,15 +132,26 @@ def dl_sim(DM_Type,Instrument):
         kwargs_lens_light_r, kwargs_source_r,_ = sim_r.magnitude2amplitude(lens_light_kwargs[1], source_light_kwargs[1])
         kwargs_lens_light_i, kwargs_source_i,_ = sim_i.magnitude2amplitude(lens_light_kwargs[2], source_light_kwargs[2])
 
-        image_g = imSim_g.image(lens_nonlight_kwargs, kwargs_source_g, kwargs_lens_light_g,point_source_add=False,lens_light_add=True)
-        image_r = imSim_r.image(lens_nonlight_kwargs, kwargs_source_r, kwargs_lens_light_r,point_source_add=False,lens_light_add=True)
-        image_i = imSim_i.image(lens_nonlight_kwargs, kwargs_source_i, kwargs_lens_light_i,point_source_add=False,lens_light_add=True)
+        image_g_flux = imSim_g.image(lens_nonlight_kwargs, kwargs_source_g, kwargs_lens_light_g,point_source_add=False,source_add=True,lens_light_add=False) 
+        image_r_flux = imSim_r.image(lens_nonlight_kwargs, kwargs_source_r, kwargs_lens_light_r,point_source_add=False,source_add=True,lens_light_add=False) 
+        image_i_flux = imSim_i.image(lens_nonlight_kwargs, kwargs_source_i, kwargs_lens_light_i,point_source_add=False,source_add=True,lens_light_add=False) 
+       
+        image_g = image_g_flux * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'] /10**(0.9)
+        image_r = image_r_flux * band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'] /10**(0.9)
+        image_i = image_i_flux * band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] /10**(0.9)
 
-        return image_g,image_r,image_i
+        image_g += sim_g.noise_for_model(model=image_g)
+        image_r += sim_r.noise_for_model(model=image_r)
+        image_i += sim_i.noise_for_model(model=image_i)
 
-
-    img_g,img_r,img_i = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=lens_kwargs_list,kwargs_model_=kwargs_model)
-    img_nss_g,img_nss_r,img_nss_i = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=Macro_kwargs_list,kwargs_model_=kwargs_model_nss)
+        total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'] /10**(0.9),band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'] /10**(0.9),band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] /10**(0.9)])
+        
+        #data_class = sim_g.data_class
+        return image_g,image_r,image_i,total_exposure_times
+    
+    img_g,img_r,img_i,tot_exp_times = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=lens_kwargs_list,kwargs_model_=kwargs_model)
+    
+    img_nss_g,img_nss_r,img_nss_i,_ = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=Macro_kwargs_list,kwargs_model_=kwargs_model_nss,exposure_times_=tot_exp_times)
 
     sns_diff_g = img_g / img_nss_g
     sns_diff_r = img_r / img_nss_r
@@ -152,8 +163,9 @@ def dl_sim(DM_Type,Instrument):
 
 
     #Prepare Outputs
+    start6 = time.time()
     if DM_Type == 'CDM':
-        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
+        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type'],'exposure_time':tot_exp_times}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle}
@@ -164,7 +176,7 @@ def dl_sim(DM_Type,Instrument):
         output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict,'raw':raw}
 
     if DM_Type == 'Axion':
-        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
+        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type'],'exposure_time':tot_exp_times}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle, 'axion_mass':M_axion}
@@ -175,7 +187,7 @@ def dl_sim(DM_Type,Instrument):
         output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict, 'raw':raw}
     
     if DM_Type == 'WDM':
-        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
+        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type'],'exposure_time':tot_exp_times}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle,'supressed_mass':log_mc}
@@ -186,7 +198,7 @@ def dl_sim(DM_Type,Instrument):
         output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict,'raw':raw}
 
     if DM_Type == 'SIDM':
-        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type']}
+        instr_dict = {'name': Instrument, 'pixel_scale': kwargs_g_band['pixel_scale'],'psf':kwargs_g_band['psf_type'],'exposure_time':tot_exp_times}
         source_dict = {'zsource':zsource,'mag_src': source_mag, 'phi_G':kwargs_source_mag[0][0]['phi_G'],'center':np.array([source_pos_xx,source_pos_yy])}
         ext_shear_dict = {'gamma_1':Macro_kwargs_list[1]['gamma1'], 'gamma_2':Macro_kwargs_list[1]['gamma2']}
         sub_defl_dict = {'arcsec_opening':arcsecond_opening_angle,'subhalo_mass_ranges':mass_ranges_subhalos,'field_halos_mass_ranges':mass_ranges_field_halos,'prob_subhalo':probabilities_subhalos,'prob_field_halo':probabilities_field_halos}
@@ -195,6 +207,8 @@ def dl_sim(DM_Type,Instrument):
         image_dict = {'image':img,'image_no_sub':img_nss,'contrast':sns_diff}
         raw = {'source': raw_src, 'deflector':raw_dfr}
         output = {'image': image_dict, 'deflector':defl_dict,'source':source_dict,'instrument':instr_dict, 'raw': raw}
+
+    print('Simulation Complete!')
     return output
 
 
