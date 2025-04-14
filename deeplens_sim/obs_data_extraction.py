@@ -111,7 +111,15 @@ def extraction(z_limits):
         r_mag_s = file['r_cmodel_mag'][ids]
         i_mag_s = file['i_cmodel_mag'][ids]
         zsource = np.round(file['specz_redshift'][ids],2)
-       
+    
+    #Processing of source and deflector images:
+    src_g = src_process(source_morph[0,:,:],center_s,sigma_x_s,sigma_y_s,angle_s)
+    src_r = src_process(source_morph[1,:,:],center_s,sigma_x_s,sigma_y_s,angle_s)
+    src_i = src_process(source_morph[2,:,:],center_s,sigma_x_s,sigma_y_s,angle_s)
+
+    dfr_g = src_process(deflector_morph[0,:,:],center_d,sigma_x_d,sigma_y_d,angle_d)
+    dfr_r = src_process(deflector_morph[1,:,:],center_d,sigma_x_d,sigma_y_d,angle_d)
+    dfr_i = src_process(deflector_morph[2,:,:],center_d,sigma_x_d,sigma_y_d,angle_d)
     
     source_images = np.array([src_g,src_i,src_r])
     source_mag = np.array([g_mag_s,r_mag_s,i_mag_s])
