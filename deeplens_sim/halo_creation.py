@@ -7,9 +7,9 @@ from astropy.constants import G, c, M_sun
 
 def Halo_constructor(DM_type, redshifts, Interlopers):
   if Interlopers == True:
-        LOS = 1.0
+    LOS = 1.0
   else:
-      LOS = 0.0
+    LOS = 0.0
 
   def Host_mass(mean = 13, sigma =1.0):
       '''Samples log of host mass from normal distribution'''
