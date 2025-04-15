@@ -5,11 +5,10 @@ import numpy as np
 from astropy import units as u
 from astropy.constants import G, c, M_sun
 
-def Halo_constructor(DM_type, redshifts):
-
+def Halo_constructor(DM_type, redshifts, Interlopers):
   if Interlopers == True:
         LOS = 1.0
-    else:
+  else:
         LOS = 0.0
 
   def Host_mass(mean = 13, sigma =1.0):
