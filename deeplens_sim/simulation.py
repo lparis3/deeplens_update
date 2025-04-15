@@ -52,13 +52,13 @@ def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):
     from deeplens_sim.halo_creation import Halo_constructor
 
     if DM_Type == 'CDM':
-      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle,Host_mass=Halo_constructor(DM_Type,redshifts,Interlopers)
+      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle,m_Host,slope_Host=Halo_constructor(DM_Type,redshifts,Interlopers)
     elif DM_Type == 'WDM':
-      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, log_mc, arcsecond_opening_angle,Host_mass = Halo_constructor(DM_Type,redshifts,Interlopers)
+      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, log_mc, arcsecond_opening_angle,m_Host,slope_Host = Halo_constructor(DM_Type,redshifts,Interlopers)
     elif DM_Type == 'SIDM':
-      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, mass_ranges_subhalos, mass_ranges_field_halos, probabilities_subhalos, probabilities_field_halos, arcsecond_opening_angle, Host_mass=Halo_constructor(DM_Type,redshifts,Interlopers)
+      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, mass_ranges_subhalos, mass_ranges_field_halos, probabilities_subhalos, probabilities_field_halos, arcsecond_opening_angle,m_Host,slope_Host=Halo_constructor(DM_Type,redshifts,Interlopers)
     elif DM_Type == 'Axion':
-      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,M_axion,arcsecond_opening_angle, Host_mass=Halo_constructor(DM_Type,redshifts,Interlopers)
+      lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,M_axion,arcsecond_opening_angle,m_Host,slope_Host=Halo_constructor(DM_Type,redshifts,Interlopers)
 
     print('Halos constructed!')
 
