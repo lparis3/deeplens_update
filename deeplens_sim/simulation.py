@@ -151,7 +151,7 @@ def dl_sim(DM_Type,Instrument,z_limits = None, Interlopers = True):
     
     img_g,img_r,img_i,tot_exp_times = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=lens_kwargs_list,kwargs_model_=kwargs_model)
     
-    img_nss_g,img_nss_r,img_nss_i,_ = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=Macro_kwargs_list,kwargs_model_=kwargs_model_nss,exposure_times_=tot_exp_times)
+    img_nss_g,img_nss_r,img_nss_i,_ = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=Macro_kwargs_list,kwargs_model_=kwargs_model_nss)
 
     sns_diff_g = img_g / img_nss_g
     sns_diff_r = img_r / img_nss_r
