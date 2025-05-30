@@ -52,14 +52,16 @@ def Halo_constructor(DM_type, redshifts, Interlopers):
 
       theta_E = mass_to_radius(M_host,zsource,zdeflector)
 
+      if (2*theta_E) / bands[0]['pixel_scale'] > 128:
+              sys.exit("Ignoring simulation: Theta_E > 64 pixels.")
 
       #Host halo
       Host_halo = 'EPL'
-      Host_kwargs = {'theta_E':theta_E,'gamma':Host_gamma,'e1':0.4,'e2':-0.1,'center_x':0.0, 'center_y':0.0} 
+      Host_kwargs = {'theta_E':theta_E,'gamma':Host_gamma,'e1':0.0,'e2':0.0,'center_x':0.0, 'center_y':0.0} 
 
       #External shear
       External_shear = 'SHEAR'
-      Shear_kwargs = {'gamma1':0.03,'gamma2':0.01,'ra_0': 0.0, 'dec_0': 0.0} 
+      Shear_kwargs = {'gamma1':0.05,'gamma2':0.00,'ra_0': 0.0, 'dec_0': 0.0} 
 
       #Macrolens
       Macro_model_list = [Host_halo,External_shear]
@@ -76,8 +78,7 @@ def Halo_constructor(DM_type, redshifts, Interlopers):
   def Axion_constructor(zsource, zlens, M_host, Host_gamma, LOS_Norm):
       '''This function constructs a lens (host halo, sub halo, LOS halos, and lens galaxy) under the assumption of axionic dark matter'''
       
-      M_axion = -22
-      #np.random.uniform(-22.0,-19.0,None)
+      M_axion = np.random.uniform(-22.0,-19.0,None)
       flucs_shape='ring'
       arcsec_opening_angle = 10
       debrogile_wavelength_order = 0.6 * (10**(-22)/10**M_axion)
@@ -113,13 +114,16 @@ def Halo_constructor(DM_type, redshifts, Interlopers):
 
       theta_E = mass_to_radius(M_host,zsource,zdeflector)
 
+      if (2*theta_E) / bands[0]['pixel_scale'] > 128:
+            sys.exit("Ignoring simulation: Theta_E > 64 pixels.")
+        
       #Host halo
       Host_halo = 'EPL'
-      Host_kwargs = {'theta_E':theta_E,'gamma': Host_gamma,'e1':0.4,'e2':-0.1,'center_x':0.0, 'center_y':0.0} 
+      Host_kwargs = {'theta_E':theta_E,'gamma': Host_gamma,'e1':0.0,'e2':0.0,'center_x':0.0, 'center_y':0.0} 
 
       #External shear
       External_shear = 'SHEAR'
-      Shear_kwargs = {'gamma1':0.03,'gamma2':0.01,'ra_0': 0, 'dec_0': 0} 
+      Shear_kwargs = {'gamma1':0.05,'gamma2':0.00,'ra_0': 0, 'dec_0': 0} 
 
       #Macrolens
       Macro_model_list = [Host_halo,External_shear]
@@ -166,13 +170,16 @@ def Halo_constructor(DM_type, redshifts, Interlopers):
 
       theta_E = mass_to_radius(M_host,zsource,zdeflector)
 
+      if (2*theta_E) / bands[0]['pixel_scale'] > 128:
+            sys.exit("Ignoring simulation: Theta_E > 64 pixels.")
+        
       #Host Halo
       Host_halo = 'EPL'
-      Host_kwargs = {'theta_E':theta_E,'gamma': Host_gamma,'e1':0.4,'e2':-0.1,'center_x':0.0, 'center_y':0.0} 
+      Host_kwargs = {'theta_E':theta_E,'gamma': Host_gamma,'e1':0.0,'e2':0.0,'center_x':0.0, 'center_y':0.0} 
 
       #External shear
       External_shear = 'SHEAR'
-      Shear_kwargs = {'gamma1':0.03,'gamma2':0.01,'ra_0': 0, 'dec_0': 0} 
+      Shear_kwargs = {'gamma1':0.05,'gamma2':0.00,'ra_0': 0, 'dec_0': 0} 
 
       #Macrolens
       Macro_model_list = [Host_halo,External_shear]
@@ -234,13 +241,16 @@ def Halo_constructor(DM_type, redshifts, Interlopers):
 
       theta_E = mass_to_radius(M_host,zsource,zdeflector)
 
+      if (2*theta_E) / bands[0]['pixel_scale'] > 128:
+            sys.exit("Ignoring simulation: Theta_E > 64 pixels.")
+    
       #Host Halo
       Host_halo = 'EPL'
-      Host_kwargs = {'theta_E':theta_E,'gamma': Host_gamma,'e1':0.4,'e2':-0.1,'center_x':0.0, 'center_y':0.0} 
+      Host_kwargs = {'theta_E':theta_E,'gamma': Host_gamma,'e1':0.0,'e2':0.0,'center_x':0.0, 'center_y':0.0} 
 
       #External shear
       External_shear = 'SHEAR'
-      Shear_kwargs = {'gamma1':0.03,'gamma2':0.01,'ra_0': 0.0, 'dec_0': 0.0} 
+      Shear_kwargs = {'gamma1':0.05,'gamma2':0.00,'ra_0': 0.0, 'dec_0': 0.0} 
 
       #Macrolens
       Macro_model_list = [Host_halo,External_shear]
@@ -256,10 +266,37 @@ def Halo_constructor(DM_type, redshifts, Interlopers):
 
   m_Host = Host_mass()
   slope_Host = Host_slope()
-  zdeflector = redshifts[0]
-  zsource = redshifts[1]
 
-  
+  attempt = 1
+  max_attempts = 10
+  good = False
+  while good == False and attempt <= max_attempts:
+      try:
+          print(f'Attempt: {attempt}')
+          zdeflector = redshifts[0]
+          zsource = redshifts[1]
+          print(f'z_source:{zsource}')
+          if DM_Type == 'CDM':
+              lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle=CDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host,LOS_Norm=LOS)
+          elif DM_Type == 'WDM':
+              lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, log_mc, arcsecond_opening_angle =WDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host,LOS_Norm=LOS)
+          elif DM_Type == 'SIDM':
+              lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list, mass_ranges_subhalos, mass_ranges_field_halos, probabilities_subhalos, probabilities_field_halos, arcsecond_opening_angle=SIDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host,LOS_Norm=LOS)
+          elif DM_Type == 'Axion':
+              lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle,M_axion,flucs_shape,flucs_args=Axion_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host,LOS_Norm=LOS)
+          print('Success!')
+          good = True
+      except Exception as e:
+          print(f'Failed on attempt {attempt}: {e}')
+          redshifts = np.array([redshifts[0],redshifts[1] + np.random.uniform(0.25,0.5)])
+          print(f'Falied! Trying again with zsrc = {redshifts[1]}')
+          attempt += 1
+          good = False
+
+  if not good:
+      raise RuntimeError("All attempts failed to generate a valid model.")
+
+
   if DM_type == 'CDM':
       lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle=CDM_constructor(zsource=zsource,zlens=zdeflector,M_host=m_Host,Host_gamma=slope_Host)
       return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, Macro_kwargs_list, Macro_redshift_list,arcsecond_opening_angle,m_Host,slope_Host
