@@ -1,19 +1,4 @@
 #%%
-#Changes:
-#1. M_host now refers to the halo NOT included in the substructure
-#2. Pyhalo actually wants mass of JUST host to generate realization, so this is now the case
-#3. Fixed error where theta_E was 1) Being returned as a float and 2) Being returned as infinite because input mass was being treated as log10 M_sun (so 10**Mass * M_sun) when it was actually in kg!
-#4. Make every dataset within an exposure (except for image arrays) metadata with .attrs() 
-#5. High mass cutoff of subhalos is 10% of host halo mass
-
-#Need to do:
-#1. Fix following error- OverflowError: Range exceeds valid bounds error with np.random.uniform
-#2. Produce SNR distribution (1,000)
-#3. Send mike a list of things which I COULD add to output but dont think are necessary and ask if he wants them
-#4. Make sure that output image units are in counts
-
-#%%
-#Note: This script is a special version of dlu_sim() where the source and deflector extraction is separated from rest of dlu_sim. This allows for easier access to the extraced parameters for analysis
 #SIMULATION CODE
 import os
 import traceback
@@ -77,15 +62,12 @@ def dlu_sim_1(Instrument,z_limits = None):
 
     end1 = time.time()
     print(f'Step 1 took {end1-start1} secs')
+    
     #2.Data Extraction
     start2 = time.time()
     from scipy.ndimage import gaussian_filter
     import numpy as np
 
-    #def no_negatives(image):
-    #    image[image < 0] = 0
-    #    return image 
-            
     def center_extraction(image):
         brightest_pixel_values = np.array([np.max(image[0,:,:]), np.max(image[1,:,:]),np.max(image[2,:,:])])
         brightest_band = brightest_pixel_values.argmax()
@@ -119,7 +101,6 @@ def dlu_sim_1(Instrument,z_limits = None):
 
 
             #Deflector Info    
-            #print(str(idd)+ " works!")
             deflector_morph = file['image'][idd]
             center_d = center_extraction(deflector_morph)
             sigma_y_d = file['g_half_light_radius'][idd]*2. 
@@ -221,7 +202,6 @@ def dlu_sim_1(Instrument,z_limits = None):
 
     source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr = extraction()  
 
-    #print('Lens and Source chosen!')
     end2 = time.time()
     print(f'Step 2 took {end2-start2} seconds')
     return bands,source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr, start1, band_labels
@@ -231,7 +211,6 @@ class SkipSimulation1(Exception):
         pass
 
 def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,deflector_images,deflector_mag, redshifts, raw_src, raw_dfr,start_time,band_labels,Interlopers = True, lens_light = False):  
-    #print(f'Step 2 took {end2-start2} secs')
     #3. Construct host halo, sub halos, and field halos 
     start3 = time.time()
     import pyHalo
@@ -239,10 +218,8 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
     from astropy import units as u
     from astropy.constants import G, c, M_sun
 
-
     class SkipSimulation2(Exception):
         pass
-
 
     if Interlopers == True:
         LOS = 1.0
@@ -257,9 +234,6 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
     def Host_slope(gammaL = 1.9, gammaH = 2.2):
         '''Samples host halo's log slope between lower and upper bounds from Gilman et al. 2022'''
         return np.random.uniform(gammaL,gammaH,None)
-    
-    log_mlow = 6
-    log_mhigh = M_host - 1
 
 
     def CDM_constructor(zsource, zlens, M_host, log_mlow,log_mhigh,Host_gamma, LOS_Norm):
@@ -539,6 +513,9 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
 
     M_host = Host_mass()
     slope_Host = Host_slope()
+
+    log_mlow = 6
+    log_mhigh = M_host - 1
     
     print(f'Redshifts being used are {redshifts}')
     attempt = 1
@@ -576,6 +553,7 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
 
     end3 = time.time()
     print(f'Step 3 took {end3-start3} secs')
+    
     #4. Consolidate lens and source models and finalize kwargs
     start4 = time.time()
     kwargs_model = {'lens_model_list': lens_model_list,  # list of lens models to be used
@@ -678,17 +656,9 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
         kwargs_lens_light_i, kwargs_source_i,_ = sim_i.magnitude2amplitude(lens_light_kwargs[2], source_light_kwargs[2])
 
         image_g_flux = imSim_g.image(lens_nonlight_kwargs, kwargs_source_g, kwargs_lens_light_g,point_source_add=False,source_add=True,lens_light_add=lens_light) 
-        #* (bands[0]['exposure_time']*bands[0]['num_exposures'])
         image_r_flux = imSim_r.image(lens_nonlight_kwargs, kwargs_source_r, kwargs_lens_light_r,point_source_add=False,source_add=True,lens_light_add=lens_light) 
-        #* (bands[1]['exposure_time']*bands[1]['num_exposures'])
         image_i_flux = imSim_i.image(lens_nonlight_kwargs, kwargs_source_i, kwargs_lens_light_i,point_source_add=False,source_add=True,lens_light_add=lens_light) 
-        #* (bands[2]['exposure_time']*bands[2]['num_exposures'])
        
-        #if exposure_times_.any() == None:
-        #    total_exposure_time_g = 625 / np.max(image_g_flux.flatten())
-        #    total_exposure_time_r = 625 / np.max(image_r_flux[1].flatten())
-        #    total_exposure_time_i = 625 / np.max(image_i_flux[2].flatten())
-        #   exposure_times_ = np.array([total_exposure_time_g,total_exposure_time_r,total_exposure_time_i])
         image_g = image_g_flux * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'] / et_quotient
         image_r = image_r_flux * band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'] /et_quotient
         image_i = image_i_flux * band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] /et_quotient
@@ -699,7 +669,6 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
 
         total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'] / et_quotient,band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'] /et_quotient,band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] /et_quotient])
 
-        #data_class = sim_g.data_class
         return image_g_noise,image_r_noise,image_i_noise,image_g,image_r,image_i,total_exposure_times
     
     img_g_noise,img_r_noise,img_i_noise,img_g,img_r,img_i,tot_exp_times = simulate(kwargs_numerics=kwargs_numerics,band_kwargs=bands,lens_light_kwargs=kwargs_lens_light_mag,source_light_kwargs=kwargs_source_mag,lens_nonlight_kwargs=lens_kwargs_list,kwargs_model_=kwargs_model)
@@ -792,9 +761,6 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
     exposure_2.attrs['source_magnitude'] = np.array([str(source_mag[2]),'Unlensed source galaxy magnitude'],dtype=dt)
     exposure_2.attrs['units'] = np.array(['counts','Units of pixel values'],dtype=dt)
     hf.create_dataset(f'images/strong_lens_{i}/exposure_{i}_{band_labels[2]}_nss',data = img_nss[2])
-    
-
-    
 
     #print('Done!')
     end = time.time()
