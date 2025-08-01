@@ -794,9 +794,9 @@ def dlu_sim_2(DM_Type,Instrument,et_quotient,bands,source_images,source_mag,defl
 ##########################################
 #LOGISTICAL STUFF
 # Define constants
-instruments = ['Roman']
-DM_types = ['CDM', 'Axion']
-total_sim_num = 1000
+instruments = ['Roman','LSST']
+DM_types = ['CDM', 'Axion', 'WDM', 'SIDM']
+total_sim_num = 8000
 timestamp = datetime.datetime.now().strftime("[%Y-%m-%d]")
 log_file = f"sim_log(No_lens_light_{timestamp}).txt"
 if not os.path.exists(f'model_alpha_{timestamp}'):
