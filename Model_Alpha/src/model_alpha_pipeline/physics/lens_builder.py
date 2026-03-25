@@ -1,7 +1,7 @@
 import time
 import numpy as np
 
-from model_alpha_pipeline.structures.dataclasses import DLU1Output
+from model_alpha_pipeline.structures.dataclasses import dlu_1_output
 from model_alpha_pipeline.physics.halo_constructors import (
     cdm_constructor,
     wdm_constructor,
