@@ -1,4 +1,6 @@
 import numpy as np
+from lenstronomy.SimulationAPI.sim_api import SimAPI
+
 
 def find_SNR(image):
     '''Assuming only Poisson noise, finds snr image's brightest pixel'''
