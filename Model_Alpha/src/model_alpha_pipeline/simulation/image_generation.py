@@ -1,5 +1,10 @@
 import numpy as np
 
+def find_SNR(image):
+    '''Assuming only Poisson noise, finds snr image's brightest pixel'''
+    SNR = np.sqrt(np.max(image))
+    return SNR
+
 def simulate(kwargs_numerics,band_kwargs,lens_light_kwargs,source_light_kwargs,lens_nonlight_kwargs,kwargs_model_):
     numpix = 127
 
