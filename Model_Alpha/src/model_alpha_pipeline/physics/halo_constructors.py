@@ -2,7 +2,7 @@ import numpy as np
 import pyHalo
 
 
-def CDM_constructor(zsource, zlens, M_host, host_theta_E_arcsec,max_subhalo_mass,Host_gamma, LOS_Norm):
+def cdm_constructor(zsource, zlens, M_host, host_theta_E_arcsec,max_subhalo_mass,Host_gamma, LOS_Norm):
         '''This function constructs a lens (host halo, sub halo, LOS halos, and lens galaxy) under the assumption of CDM'''
         arcsec_opening_angle = 10
         log_mlow = 6 #in units of log10(solar masses)
@@ -43,7 +43,7 @@ def CDM_constructor(zsource, zlens, M_host, host_theta_E_arcsec,max_subhalo_mass
         
         return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, macro_kwargs_list, Macro_redshift_list, arcsec_opening_angle,M_host,M_Whole_lens,len(Subhalo_realization.halos)
 
-def Axion_constructor(zsource, zlens, M_host, host_theta_E_arcsec,max_subhalo_mass,Host_gamma, LOS_Norm):
+def axion_constructor(zsource, zlens, M_host, host_theta_E_arcsec,max_subhalo_mass,Host_gamma, LOS_Norm):
         '''This function constructs a lens (host halo, sub halo, LOS halos, and lens galaxy) under the assumption of axionic dark matter'''
         arcsec_opening_angle = 10
         log_mlow = 6 #in units of solar masses
@@ -96,7 +96,7 @@ def Axion_constructor(zsource, zlens, M_host, host_theta_E_arcsec,max_subhalo_ma
 
         return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology,Macro_model_list, macro_kwargs_list, Macro_redshift_list, arcsec_opening_angle, M_axion,flucs_shape,flucs_args,M_host,M_Whole_lens,len(Subhalo_realization.halos)
         
-def WDM_constructor(zsource, zlens,M_host,host_theta_E_arcsec,max_subhalo_mass, Host_gamma,LOS_Norm):
+def wdm_constructor(zsource, zlens,M_host,host_theta_E_arcsec,max_subhalo_mass, Host_gamma,LOS_Norm):
         '''This function constructs a lens (host halo, sub halo, LOS halos, and lens galaxy) under the assumption of WDM'''
         arcsec_opening_angle = 10
         log_mlow = 6 #in units of solar masses
@@ -141,7 +141,7 @@ def WDM_constructor(zsource, zlens,M_host,host_theta_E_arcsec,max_subhalo_mass, 
 
         return lens_model_list,lens_kwargs_list,lens_redshift_list,cosmology, Macro_model_list, macro_kwargs_list, Macro_redshift_list, arcsec_opening_angle,log_mc,M_host,M_Whole_lens, len(Subhalo_realization.halos)
 
-def SIDM_constructor(zsource, zlens,M_host,host_theta_E_arcsec,max_subhalo_mass,Host_gamma,LOS_Norm):
+def sidm_constructor(zsource, zlens,M_host,host_theta_E_arcsec,max_subhalo_mass,Host_gamma,LOS_Norm):
         '''This function constructs a lens (host halo, sub halo, LOS halos, and lens galaxy) under the assumption of SIDM'''
         
         arcsec_opening_angle = 10
