@@ -14,7 +14,7 @@ def mass_to_radius_arcsec(Mass,redshift_src,redshift_def):
     radius_arcsec = theta * rad_to_arcsec
 
     return radius_arcsec.value
-    pass
+    
 
 def kwargs_light_mag(posxx,posyy,pixel_scale):
     '''Returns kwargs_single_band values for g,r,and i while taking into account intrument of simulated image.'''
@@ -42,7 +42,7 @@ def kwargs_light_mag(posxx,posyy,pixel_scale):
     kwargs_source_mag = [kwargs_source_mag_g,kwargs_source_mag_r,kwargs_source_mag_i]
 
     return kwargs_lens_light_mag, kwargs_source_mag
-    pass
+    
 
 def build_lensing_setup(sampled_vals, dlu_1_results, dlu_2_results):
     zdeflector = sampled_vals.redshifts[0]
