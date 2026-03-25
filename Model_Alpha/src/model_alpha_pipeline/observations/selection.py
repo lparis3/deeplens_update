@@ -74,7 +74,7 @@ def extraction(obs_data,z_pair,redshift_bin_edges):
     dfr_r = src_process(deflector_morph[1,:,:],center_d,sigma_x_d,sigma_y_d,angle_d)
     dfr_i = src_process(deflector_morph[2,:,:],center_d,sigma_x_d,sigma_y_d,angle_d)
 
-    source_images = np.array([src_g,src_i,src_r]) #processed source morphology
+    source_images = np.array([src_g,src_r,src_i]) #processed source morphology
     source_mag = np.array([g_mag_s,r_mag_s,i_mag_s])
     raw_info_src = {'raw_img': source_morph, 'pros_img': source_images, 'raw_center':center_s}
 
