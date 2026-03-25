@@ -3,51 +3,39 @@ import numpy as np
 
 
 @dataclass
-class SampledParameters:
-    """
-    Output of the normalizing flow sampling stage.
-    """
-    z_lens: float
-    z_source: float
-    theta_E: float
-    gamma: float
-    e1: float
-    e2: float
-    center_x: float
-    center_y: float
+
+class sampled_values:
+    redshifts:np.ndarray
+    host_theta_E_arcsecond:float
+    M_host:float
+    max_subhalo_mass:float
 
 
 @dataclass
-class LensSystem:
-    """
-    Output of stage 1: lens + subhalo realization.
-    """
-    z_lens: float
-    z_source: float
-    theta_E: float
-    gamma: float
-    e1: float
-    e2: float
-    center_x: float
-    center_y: float
 
-    # Substructure / halo information
-    halo_model: object
-    kwargs_lens: list
-    kwargs_lens_light: list
-    kwargs_ps: list
-
+class dlu_1_output:
+    lens_model_list:list
+    lens_kwargs_list:list
+    lens_redshift_list:list
+    cosmology:Any
+    macro_model_list:list
+    macro_kwargs_list:list
+    macro_redshift_list:list
+    arcsecond_opening_angle:int
+    host_mass:float
+    whole_halo_mass:float
+    num_subhalos:int
+    slope_Host:float
+    type_kwargs:dict
+    
 
 @dataclass
-class ObservationData:
-    """
-    Output of stage 2: selected and processed galaxy image.
-    """
-    image: np.ndarray
-    exposure_time: float
-    background_rms: float
-    pixel_scale: float
-
-    # Optional metadata
-    source_redshift: float
-    lens_redshift: float
+class dlu_2_output:
+    bands:list
+    band_labels:list
+    source_images:np.ndarray
+    source_mag:np.ndarray
+    deflector_images:np.ndarray
+    deflector_mag:np.ndarray
+    raw_src:dict
+    raw_dfr:dict
