@@ -77,4 +77,4 @@ def write_simulation_output(
     exposure_2.attrs['source_magnitude'] = np.array([str(dlu_2_results.source_mag[2]),'Unlensed source galaxy magnitude'],dtype=dt)
     exposure_2.attrs['units'] = np.array(['counts','Units of pixel values'],dtype=dt)
     hf.create_dataset(f'images/strong_lens_{i}/exposure_{i}_{dlu_2_results.band_labels[2]}_nss',data = img_nss[2])
-    pass
+    
