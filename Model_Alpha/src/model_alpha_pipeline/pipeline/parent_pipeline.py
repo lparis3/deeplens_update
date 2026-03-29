@@ -2,7 +2,7 @@ import h5py
 from model_alpha_pipeline.pipeline.child_pipeline import simulation_child
 
 
-def simulation_parent(DM_Types,instruments,sim_number_per_permutation,observational_data_file):
+def simulation_parent(DM_Types,instruments,sim_number_per_permutation,observational_data_file,output_dir):
     '''Runs all simulations for a single run.'''
 
     #Create timestamp for when this batch of sims is called
@@ -15,7 +15,7 @@ def simulation_parent(DM_Types,instruments,sim_number_per_permutation,observatio
     for type in DM_Types:
         for instrument in instruments:
             output_file_name = f"model_alpha_{type}_{instrument}_{timestamp}.h5" 
-            output_path = f'./model_alpha_{timestamp}/{output_file_name}' #Create file in new directory corresponding to a particular permutation of (DM_Type, instrument)
+            output_path = f'./{output_dir}/model_alpha_{timestamp}/{output_file_name}' #Create file in new directory corresponding to a particular permutation of (DM_Type, instrument)
             if os.path.exists(output_path):
                 with h5py.File(f'./model_alpha_{timestamp}/{output_file_name}','r+') as results_h5_file:
                     for i in range(1,sim_number_per_permutation+1):
