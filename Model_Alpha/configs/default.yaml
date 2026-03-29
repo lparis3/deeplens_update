@@ -4,7 +4,7 @@ run:
     - LSST
   dm_types:
     - CDM
-  output_dir: data/outputs
+  output_dir: data
 
 data:
   hsc_catalog: data/HSC_catalog.hdf5
