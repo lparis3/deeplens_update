@@ -23,13 +23,11 @@ def main():
     # Open observational data
     with h5py.File(hsc_catalog_path, "r") as observational_data:
         simulation_parent(
+             DM_types=dm_types,
             instruments=instruments,
-            DM_types=dm_types,
             sim_number_per_permutation=simulations_per_permutation,
             observational_data=observational_data,
-            output_dir=output_dir,
-            lenspop_flow_checkpoint=lenspop_flow_checkpoint,
-            camels_flow_checkpoint=camels_flow_checkpoint,
+            output_dir=output_dir
         )
 
 
