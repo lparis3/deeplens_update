@@ -1,3 +1,10 @@
+from model_alpha_pipeline.sampling.sampler import sampler_master_function
+from model_alpha_pipeline.physics.lens_builder import dlu_1
+from model_alpha_pipeline.observations.observation_builder import dlu_2
+from model_alpha_pipeline.simulation.simulation_builder import dlu_3
+
+
+
 def simulation_child(DM_Type,instrument,i,observational_data_file,time_stamp,results_h5_file):
     '''Runs all steps of a single simulation.'''
     sim_id = f"{DM_Type}_{instrument}_{i}"
