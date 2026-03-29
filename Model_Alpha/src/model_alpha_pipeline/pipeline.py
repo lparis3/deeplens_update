@@ -1,3 +1,4 @@
+import h5py
 from model_alpha_pipeline.sampling.sampler import sampler_master_function
 from model_alpha_pipeline.physics.lens_builder import dlu_1
 from model_alpha_pipeline.observations.observation_builder import dlu_2
