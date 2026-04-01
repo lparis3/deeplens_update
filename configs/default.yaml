@@ -1,0 +1,16 @@
+run:
+  simulations_per_permutation: 2
+  instruments:
+    - LSST
+  dm_types:
+    - CDM
+  output_dir: output_data
+
+data:
+  hsc_catalog: input_data/deeplens_update.hdf5
+  lenspop_flow_checkpoint: checkpoints/trained_Lenspop_flow.pt
+  camels_flow_checkpoint: checkpoints/trained_Camels_flow.pt
+
+output:
+  save_format: hdf5
+  save_intermediate: false
