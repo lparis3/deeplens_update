@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 from model_alpha_pipeline.sampling.lenspop_NF_Architecture import build_joint_flow
+from model_alpha_pipeline.paths.paths import PROJECT_ROOT
 
-
-def load_lenspop_flow(checkpoint_path="checkpoints/trained_Lenspop_flow.pt", device="cpu"):
+def load_lenspop_flow(checkpoint_path=PROJECT_ROOT/"checkpoints"/"trained_Lenspop_flow.pt", device="cpu"):
     """
     Load the trained Lenspop normalizing flow and its normalization stats.
     """

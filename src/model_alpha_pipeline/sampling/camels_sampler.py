@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 from model_alpha_pipeline.sampling.Camels_NF_Architecture import build_conditional_flow
+from model_alpha_pipeline.paths.paths import PROJECT_ROOT
 
-
-def load_camels_flow(checkpoint_path="checkpoints/trained_Camels_flow.pt", device="cpu"):
+def load_camels_flow(checkpoint_path=PROJECT_ROOT/"checkpoints"/"trained_Camels_flow.pt", device="cpu"):
     """
     Load the trained conditional Camels normalizing flow and normalization stats.
     """
