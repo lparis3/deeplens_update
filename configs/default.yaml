@@ -1,9 +1,11 @@
 run:
-  simulations_per_permutation: 2
+  simulations_per_permutation: 4
+  n_workers: 2
   instruments:
     - LSST
   dm_types:
     - CDM
+    - WDM
   output_dir: output_data
 
 data:

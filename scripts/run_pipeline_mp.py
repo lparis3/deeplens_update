@@ -2,8 +2,8 @@
 import yaml
 import h5py
 
-from model_alpha_pipeline.pipeline.parent_pipeline import simulation_parent
-from model_alpha_pipeline.paths.paths import PROJECT_ROOT
+from model_alpha_pipeline_mp.pipeline.parent_pipeline import simulation_parent
+from model_alpha_pipeline_mp.paths.paths import PROJECT_ROOT
 
 def main():
     # Load config file
@@ -12,6 +12,7 @@ def main():
 
     # Unpack run settings
     simulations_per_permutation = config["run"]["simulations_per_permutation"]
+    n_workers = config["run"]["n_workers"]
     instruments = config["run"]["instruments"]
     dm_types = config["run"]["dm_types"]
     output_dir = config["run"]["output_dir"] 
@@ -25,7 +26,8 @@ def main():
         instruments=instruments,
         sim_number_per_permutation=simulations_per_permutation,
         observational_data_path=hsc_catalog_path,
-        output_dir=output_dir
+        output_dir=output_dir,
+        n_workers=n_workers
     )
 
 
