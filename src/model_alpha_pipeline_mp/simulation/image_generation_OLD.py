@@ -134,33 +134,6 @@ def simulate(Instrument,kwargs_numerics,band_kwargs,lens_light_kwargs,source_lig
 
         return [image_VIS, total_exposure_times]
 
-    elif Instrument == 'Roman_VIS':
-        sim_FO62 = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[0], kwargs_model=kwargs_model_)
-        sim_FO87 = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[1], kwargs_model=kwargs_model_)
-
-        imSim_FO62 = sim_FO62.image_model_class(kwargs_numerics)
-        imSim_FO87 = sim_FO87.image_model_class(kwargs_numerics)
-
-        kwargs_lens_light_FO62, kwargs_source_FO62,_ = sim_FO62.magnitude2amplitude(lens_light_kwargs[0], source_light_kwargs[0])
-        kwargs_lens_light_FO87, kwargs_source_FO87,_ = sim_FO87.magnitude2amplitude(lens_light_kwargs[1], source_light_kwargs[1])
-
-        image_FO62_surface_brightness = imSim_FO62.image(lens_nonlight_kwargs, kwargs_source_FO62, kwargs_lens_light_FO62,point_source_add=False,source_add=True,lens_light_add=False) 
-        image_FO87_surface_brightness = imSim_FO87.image(lens_nonlight_kwargs, kwargs_source_FO87, kwargs_lens_light_FO87,point_source_add=False,source_add=True,lens_light_add=False) 
-        #units of e-counts/sec/arcsec^2
-
-        image_FO62_flux = image_FO62_surface_brightness * band_kwargs[0]['pixel_scale']**2
-        image_FO87_flux = image_FO87_surface_brightness * band_kwargs[1]['pixel_scale']**2
-        #units of e-counts/sec
-
-        image_FO62 = (image_FO62_flux + sim_FO62.noise_for_model(model=image_FO62_flux,background_noise=False)) * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'] 
-        image_FO87 = (image_FO87_flux + sim_FO87.noise_for_model(model=image_FO87_flux,background_noise=False))  * band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'] 
-        #Each output pixel in units of e counts 
-
-        total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'],band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'],band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] ])
-
-        return [image_FO62,image_FO87,total_exposure_times]
-
-
 
 
 def generate_images(Instrument,setup_results, dlu_1_results,dlu_2_results):

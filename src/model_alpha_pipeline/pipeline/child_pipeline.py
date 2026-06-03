@@ -9,7 +9,7 @@ from model_alpha_pipeline.simulation.simulation_builder import dlu_3
 
 
 
-def simulation_child(DM_type,instrument,i,observational_data_file,timestamp,results_h5_file):
+def simulation_child(DM_type,instrument,i,light_profile,observational_data_file,timestamp,results_h5_file):
     '''Runs all steps of a single simulation.'''
     sim_id = f"{DM_type}_{instrument}_{i}"
     while True:
@@ -24,9 +24,9 @@ def simulation_child(DM_type,instrument,i,observational_data_file,timestamp,resu
             hsc_redshifts = np.array([observational_data_file['specz_redshift']])[0]
             redshift_bin_edges = make_bins(hsc_redshifts)
 
-            dlu_2_results = dlu_2(instrument,observational_data_file,sampled_vals.redshifts,redshift_bin_edges)
+            dlu_2_results = dlu_2(instrument,observational_data_file,sampled_vals.redshifts,redshift_bin_edges,light_profile=light_profile)
             
-            dlu_3(i,DM_type,instrument,results_h5_file,timestamp,sampled_vals,dlu_1_results,dlu_2_results)
+            dlu_3(i,DM_type,instrument,results_h5_file,timestamp,sampled_vals,dlu_1_results,dlu_2_results,light_profile=light_profile)
 
             end0=time.time()
             print(f'Sim took {end0-start0} secs')

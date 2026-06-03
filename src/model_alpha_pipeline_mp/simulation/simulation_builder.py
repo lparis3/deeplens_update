@@ -6,10 +6,18 @@ from model_alpha_pipeline_mp.simulation.image_generation import generate_images
 from model_alpha_pipeline_mp.simulation.output_writer import write_simulation_output
 
 
-def dlu_3_collect(DM_type, Instrument, sampled_vals, dlu_1_results, dlu_2_results):
+def dlu_3_collect(DM_type, Instrument, sampled_vals, dlu_1_results, dlu_2_results,
+                  light_profile='INTERPOL'):
     """
     Computation half of the original dlu_3: builds the lensing setup and
     renders images, but does NOT write anything to HDF5.
+
+    Parameters
+    ----------
+    light_profile : str
+        'INTERPOL' (default) or 'SERSIC'. Passed through to
+        build_lensing_setup so the lens/source light model lists and
+        kwargs match the chosen profile.
 
     Returns
     -------
@@ -30,9 +38,10 @@ def dlu_3_collect(DM_type, Instrument, sampled_vals, dlu_1_results, dlu_2_result
         sampled_vals=sampled_vals,
         dlu_1_results=dlu_1_results,
         dlu_2_results=dlu_2_results,
+        light_profile=light_profile,
     )
 
-    image_results = generate_images(
+    image_results = generate_images(Instrument,
         setup_results=setup_results,
         dlu_1_results=dlu_1_results,
         dlu_2_results=dlu_2_results,
@@ -45,7 +54,8 @@ def dlu_3_collect(DM_type, Instrument, sampled_vals, dlu_1_results, dlu_2_result
 
 
 def dlu_3(i, DM_type, Instrument, hf, timestamp,
-          sampled_vals, dlu_1_results, dlu_2_results):
+          sampled_vals, dlu_1_results, dlu_2_results,
+          light_profile='INTERPOL'):
     """
     Legacy single-process entrypoint, preserved so any non-parallel callers
     of dlu_3 still work.
@@ -61,6 +71,7 @@ def dlu_3(i, DM_type, Instrument, hf, timestamp,
         sampled_vals=sampled_vals,
         dlu_1_results=dlu_1_results,
         dlu_2_results=dlu_2_results,
+        light_profile=light_profile,
     )
 
     collected = collect_simulation_output(

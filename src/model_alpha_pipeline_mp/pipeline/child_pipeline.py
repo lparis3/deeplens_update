@@ -34,7 +34,7 @@ def worker_init(observational_data_path):
     np.random.seed(os.getpid() % (2**32 - 1))
 
 
-def simulation_child(DM_type, instrument, i, timestamp):
+def simulation_child(DM_type, instrument,light_profile, i, timestamp):
     """
     Runs all steps of a single simulation in a worker process.
 
@@ -56,6 +56,10 @@ def simulation_child(DM_type, instrument, i, timestamp):
     # don't repeat identical streams.
     np.random.seed((os.getpid() * 100003 + i) % (2**32 - 1))
 
+    #NOTE:If instrument is Roman_VIS, FORCE sersic profile (smearing from hsc image psf will eliminate all benefit of Romans resolution)
+    if instrument == "Roman_VIS":
+        light_profile="SERSIC"
+
     while True:
         sampled_vals = sampler_master_function()
 
@@ -69,11 +73,11 @@ def simulation_child(DM_type, instrument, i, timestamp):
 
             # dlu_2's original signature, unchanged — it takes the open file.
             dlu_2_results = dlu_2(instrument, _OBS_FILE,
-                                  sampled_vals.redshifts, redshift_bin_edges)
+                                  sampled_vals.redshifts, redshift_bin_edges,light_profile=light_profile)
 
             # dlu_3 split: computation only, no h5 writes. See note below.
             setup_results, image_results = dlu_3_collect(
-                DM_type, instrument, sampled_vals, dlu_1_results, dlu_2_results
+                DM_type, instrument, sampled_vals, dlu_1_results, dlu_2_results,light_profile=light_profile
             )
 
             collected = collect_simulation_output(

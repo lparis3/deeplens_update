@@ -33,14 +33,29 @@ def collect_simulation_output(
     DS = dlu_1_results.cosmology.angular_diameter_distance(zsource) / 1000
     DLS = dlu_1_results.cosmology.angular_diameter_distance_z1z2(zdeflector, zsource) / 1000
 
+    # Number of bands the instrument actually writes (e.g. 3 for LSST/DES,
+    # 1 for Euclid). We index everything off band_labels so we don't
+    # assume a fixed g/r/i layout.
+    n_bands = len(dlu_2_results.band_labels)
+
+    # Detect SERSIC vs INTERPOL light profile from the dataclass. Robust
+    # to the caller forgetting to pass a flag: if Sersic params are
+    # present, we're in SERSIC mode.
+    is_sersic = getattr(dlu_2_results, 'source_sersic_params', None) is not None
+    light_profile_label = 'SERSIC' if is_sersic else 'INTERPOL'
+
+    # exposure_time: one entry per band plus trailing comment.
+    exposure_time_entry = [str(image_results['tot_exp_times'][b]) for b in range(n_bands)]
+    exposure_time_entry.append('Exposure time in seconds for all bands')
+
+    # bands: one label per band plus trailing comment.
+    bands_entry = list(dlu_2_results.band_labels) + ['Instrument bands in which image was simulated']
+
     datasets = {
         'd_l': [str(DL), 'Angular diameter distance to deflector galaxy in Gpc'],
         'd_s': [str(DS), 'Angular diameter distance to source galaxy in Gpc'],
         'd_ls': [str(DLS), 'Angular diameter distance between deflector and source galaxy in Gpc'],
-        'exposure_time': [str(image_results['tot_exp_times'][0]),
-                          str(image_results['tot_exp_times'][1]),
-                          str(image_results['tot_exp_times'][2]),
-                          'Exposure time in seconds for all bands'],
+        'exposure_time': exposure_time_entry,
         'instrument': [Instrument, 'Instrument'],
         'log_mhigh': [str(np.log10(sampled_vals.max_subhalo_mass)), 'Log10 of largest possible subhalo mass'],
         'log_mlow': [str(6), 'Log10 of lowest possible subhalo mass'],
@@ -54,8 +69,7 @@ def collect_simulation_output(
         'uid': [str(i), f'simulation number in {DM_type} batch created on {timestamp}'],
         'z_lens': [str(zdeflector), 'Redshift of deflector'],
         'z_source': [str(zsource), 'Redshift of source'],
-        'bands': [dlu_2_results.band_labels[0], dlu_2_results.band_labels[1], dlu_2_results.band_labels[2],
-                  'Instrument bands in which image was simulated'],
+        'bands': bands_entry,
         'DM_type': [DM_type, 'Type of dark matter assumed'],
         'source_pos': [str([setup_results['source_x'], setup_results['source_y']]),
                        'Plane coordinates of source wrt center of deflector (in arcseconds)'],
@@ -63,7 +77,24 @@ def collect_simulation_output(
         'ellipticity': [str([dlu_1_results.macro_kwargs_list[0]['e1'],
                              dlu_1_results.macro_kwargs_list[0]['e2']]),
                         'Ellipticity values for host halo mass profile'],
+        'light_profile': [light_profile_label, 'Light profile used for lens and source (INTERPOL or SERSIC)'],
     }
+
+    # Sersic-specific top-level metadata, so a SERSIC run is self-describing
+    # alongside its image datasets.
+    if is_sersic:
+        src_sp = dlu_2_results.source_sersic_params
+        dfr_sp = dlu_2_results.deflector_sersic_params
+        datasets['source_sersic'] = [
+            str(src_sp['R_sersic']), str(src_sp['n_sersic']),
+            str(src_sp['e1']), str(src_sp['e2']),
+            'Source Sersic params: R_sersic, n_sersic, e1, e2',
+        ]
+        datasets['deflector_sersic'] = [
+            str(dfr_sp['R_sersic']), str(dfr_sp['n_sersic']),
+            str(dfr_sp['e1']), str(dfr_sp['e2']),
+            'Deflector Sersic params: R_sersic, n_sersic, e1, e2',
+        ]
 
     # DM-type-specific metadata
     if DM_type == 'WDM':
@@ -88,21 +119,40 @@ def collect_simulation_output(
         datasets['prob_field_halo'] = [str(dlu_1_results.type_kwargs['probabilities_field_halos']),
                                        'Probability of field halo being sampled from corresponding mass range']
 
-    # Image datasets: array data + per-band attrs
+    # Image datasets: array data + per-band attrs. Iterates over the
+    # instrument's actual bands rather than assuming three.
     image_datasets = {}
-    for band_idx in range(3):
+    for band_idx in range(n_bands):
         band = dlu_2_results.band_labels[band_idx]
+
+        attrs = {
+            'filter': [band, 'Filter'],
+            'fov': [str(dlu_1_results.arcsecond_opening_angle), 'Field of view [arcsec]'],
+            'pixel_scale': [str(dlu_2_results.bands[band_idx]['pixel_scale']), 'Pixel scale [arcsec/pixel]'],
+            'lens_magnitude': [str(dlu_2_results.deflector_mag[band_idx]), 'Lens magnitude'],
+            'source_magnitude': [str(dlu_2_results.source_mag[band_idx]), 'Unlensed source galaxy magnitude'],
+            'units': ['counts', 'Units of pixel values'],
+            'light_profile': [light_profile_label, 'Light profile used (INTERPOL or SERSIC)'],
+        }
+
+        # In SERSIC mode, attach the per-galaxy shape params to each image
+        # so the dataset is fully self-describing.
+        if is_sersic:
+            src_sp = dlu_2_results.source_sersic_params
+            dfr_sp = dlu_2_results.deflector_sersic_params
+            attrs['lens_R_sersic'] = [str(dfr_sp['R_sersic']), 'Deflector Sersic half-light radius [arcsec]']
+            attrs['lens_n_sersic'] = [str(dfr_sp['n_sersic']), 'Deflector Sersic index']
+            attrs['lens_e1'] = [str(dfr_sp['e1']), 'Deflector Sersic ellipticity component e1']
+            attrs['lens_e2'] = [str(dfr_sp['e2']), 'Deflector Sersic ellipticity component e2']
+            attrs['source_R_sersic'] = [str(src_sp['R_sersic']), 'Source Sersic half-light radius [arcsec]']
+            attrs['source_n_sersic'] = [str(src_sp['n_sersic']), 'Source Sersic index']
+            attrs['source_e1'] = [str(src_sp['e1']), 'Source Sersic ellipticity component e1']
+            attrs['source_e2'] = [str(src_sp['e2']), 'Source Sersic ellipticity component e2']
+
         name = f'exposure_{i}_{band}'
         image_datasets[name] = {
             'data': np.asarray(image_results['img'][band_idx]),
-            'attrs': {
-                'filter': [band, 'Filter'],
-                'fov': [str(dlu_1_results.arcsecond_opening_angle), 'Field of view [arcsec]'],
-                'pixel_scale': [str(dlu_2_results.bands[band_idx]['pixel_scale']), 'Pixel scale [arcsec/pixel]'],
-                'lens_magnitude': [str(dlu_2_results.deflector_mag[band_idx]), 'Lens magnitude'],
-                'source_magnitude': [str(dlu_2_results.source_mag[band_idx]), 'Unlensed source galaxy magnitude'],
-                'units': ['counts', 'Units of pixel values'],
-            },
+            'attrs': attrs,
         }
         nss_name = f'exposure_{i}_{band}_nss'
         image_datasets[nss_name] = {

@@ -14,6 +14,7 @@ def main():
     simulations_per_permutation = config["run"]["simulations_per_permutation"]
     instruments = config["run"]["instruments"]
     dm_types = config["run"]["dm_types"]
+    light_profile = config["run"]["light_profile"]
     output_dir = config["run"]["output_dir"] 
 
     # Unpack data paths
@@ -24,6 +25,7 @@ def main():
             DM_Types=dm_types,
         instruments=instruments,
         sim_number_per_permutation=simulations_per_permutation,
+        light_profile=light_profile,
         observational_data_path=hsc_catalog_path,
         output_dir=output_dir
     )

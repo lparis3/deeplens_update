@@ -1,7 +1,7 @@
 import time
 import numpy as np
-from model_alpha_pipeline.structures.dataclasses import dlu_2_output
-from model_alpha_pipeline.observations.selection import extraction
+from model_alpha_pipeline_mp.structures.dataclasses import dlu_2_output
+from model_alpha_pipeline_mp.observations.selection import extraction
 
 def make_bins(zvals, min_per_bin=50, n_start=100):
     '''Takes an array of redshift values and returns values segmented into bins'''
@@ -73,33 +73,14 @@ def instrument_config(Instrument):
         euclid = [Euclid_VIS]
         return euclid, [band1],needed_hsc_bands
 
-    elif Instrument == 'Roman_VIS':
-            from lenstronomy.SimulationAPI.ObservationConfig.Roman import Roman
-            band1 = 'FO62'
-            band2 = 'FO87'
-            needed_hsc_bands = ['r','z']
-            Roman_F062 = Roman(band = band1,psf_type='Pixel',survey_mode='time_domain_wide')
-            Roman_F087 = Roman(band = band2,psf_type='Pixel',survey_mode='time_domain_wide')
-            roman = [Roman_F062,Roman_F087]
-            return roman, [band1,band2],needed_hsc_bands
 
 
-
-def dlu_2(Instrument,observational_data,z_pair,redshift_bin_edges,light_profile='INTERPOL'):
-    '''Chooses real observations of galaxies to be used as light profile for source and lens.
-
-    Parameters
-    ----------
-    light_profile : str
-        'INTERPOL' (default): use HSC pixel cutouts as interpolated light
-        profiles for both source and lens.
-        'SERSIC': use analytic Sersic profiles (SERSIC_ELLIPSE), with
-        magnitudes drawn from the HSC catalog and other shape parameters
-        following the lens.py convention.
-    '''
+def dlu_2(Instrument,observational_data,z_pair,redshift_bin_edges):
+    '''Chooses real observations of galaxies to be used as light profile for source and lens.'''
 
     #1. Configure instrument specific parameters
     start1 = time.time()
+
     instrument_params,band_labels,needed_hsc_bands = instrument_config(Instrument=Instrument)
     bands = []
     for instrument_param in instrument_params:
@@ -111,8 +92,7 @@ def dlu_2(Instrument,observational_data,z_pair,redshift_bin_edges,light_profile=
     #2.Data Extraction
     start2 = time.time()
 
-    source_images,source_mag,deflector_images,deflector_mag, raw_src, raw_dfr, \
-        source_sersic_params, deflector_sersic_params = extraction(observational_data,z_pair,redshift_bin_edges,needed_hsc_bands,light_profile=light_profile)
+    source_images,source_mag,deflector_images,deflector_mag, raw_src, raw_dfr = extraction(observational_data,z_pair,redshift_bin_edges,needed_hsc_bands)
 
     end2 = time.time()
     #print(f'Step 3 took {end2-start2} secs')
@@ -125,8 +105,6 @@ def dlu_2(Instrument,observational_data,z_pair,redshift_bin_edges,light_profile=
                            deflector_images=deflector_images,
                            deflector_mag=deflector_mag,
                            raw_src=raw_src,
-                           raw_dfr=raw_dfr,
-                           source_sersic_params=source_sersic_params,
-                           deflector_sersic_params=deflector_sersic_params)
+                           raw_dfr=raw_dfr)
 
     return results

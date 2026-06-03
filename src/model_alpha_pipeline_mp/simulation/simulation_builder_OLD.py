@@ -1,9 +1,9 @@
-# src/model_alpha_pipeline/simulation/simulation_builder.py
+# src/model_alpha_pipeline_mp/simulation/simulation_builder.py
 import time
 
-from model_alpha_pipeline.simulation.lensing_setup import build_lensing_setup
-from model_alpha_pipeline.simulation.image_generation import generate_images
-from model_alpha_pipeline.simulation.output_writer_mp import write_simulation_output
+from model_alpha_pipeline_mp.simulation.lensing_setup import build_lensing_setup
+from model_alpha_pipeline_mp.simulation.image_generation import generate_images
+from model_alpha_pipeline_mp.simulation.output_writer import write_simulation_output
 
 
 def dlu_3_collect(DM_type, Instrument, sampled_vals, dlu_1_results, dlu_2_results):
@@ -32,14 +32,14 @@ def dlu_3_collect(DM_type, Instrument, sampled_vals, dlu_1_results, dlu_2_result
         dlu_2_results=dlu_2_results,
     )
 
-    image_results = generate_images(
+    image_results = generate_images(Instrument,
         setup_results=setup_results,
         dlu_1_results=dlu_1_results,
         dlu_2_results=dlu_2_results,
     )
 
     end3 = time.time()
-    print(f'Step 3 took {end3 - start3:.2f} secs')
+    #print(f'Step 3 took {end3 - start3:.2f} secs')
 
     return setup_results, image_results
 
@@ -53,7 +53,7 @@ def dlu_3(i, DM_type, Instrument, hf, timestamp,
     Runs the computation via dlu_3_collect, then writes results to the given
     open HDF5 file handle using the new collect+write split in output_writer.
     """
-    from model_alpha_pipeline.simulation.output_writer import collect_simulation_output
+    from model_alpha_pipeline_mp.simulation.output_writer import collect_simulation_output
 
     setup_results, image_results = dlu_3_collect(
         DM_type=DM_type,

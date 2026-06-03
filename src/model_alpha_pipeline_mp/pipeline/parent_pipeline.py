@@ -18,12 +18,12 @@ def _worker(args, timestamp):
     simulation. The observational data file handle is set up once per
     worker process by worker_init (see child_pipeline.py).
     """
-    dm_type, instrument, sim_index = args
-    collected = simulation_child(dm_type, instrument, sim_index, timestamp)
-    return dm_type, instrument, sim_index, collected
+    dm_type, instrument, light_profile,sim_index = args
+    collected = simulation_child(dm_type, instrument, light_profile,sim_index, timestamp)
+    return dm_type, instrument,sim_index, collected
 
 
-def simulation_parent(DM_Types, instruments, sim_number_per_permutation,
+def simulation_parent(DM_Types, instruments, sim_number_per_permutation,light_profile,
                       observational_data_path, output_dir, n_workers=None):
     """
     Runs all simulations for a single run, parallelized across CPU cores
@@ -73,7 +73,7 @@ def simulation_parent(DM_Types, instruments, sim_number_per_permutation,
                 print(f"Running {len(pending)} sims for {dm_type}/{instrument} "
                       f"on {n_workers} workers...")
 
-                work_items = [(dm_type, instrument, i) for i in pending]
+                work_items = [(dm_type, instrument,light_profile, i) for i in pending]
                 worker_fn = partial(_worker, timestamp=timestamp)
 
                 # initializer runs once when each worker process starts,
