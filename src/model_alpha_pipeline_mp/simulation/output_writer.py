@@ -154,13 +154,37 @@ def collect_simulation_output(
             'data': np.asarray(image_results['img'][band_idx]),
             'attrs': attrs,
         }
+
+
         nss_name = f'exposure_{i}_{band}_nss'
         image_datasets[nss_name] = {
             'data': np.asarray(image_results['img_nss'][band_idx]),
             'attrs': {},
         }
+    
+    # UNLENSED image datasets: array data. Iterates over the
+    # instrument's actual bands rather than assuming three.
+    unlensed_image_datasets = {}
+    for band_idx in range(n_bands):
+        band = dlu_2_results.band_labels[band_idx]
+        name = f'exposure_{i}_{band}_unlensed'
+        unlensed_image_datasets[name] = {
+            'data': np.asarray(image_results['img_unlensed'][band_idx]),
+        }
+    print(f'unlensed_image_datasets has {len(list(unlensed_image_datasets.keys()))} elements')
 
-    return {'datasets': datasets, 'image_datasets': image_datasets}
+    # Convergence field datasets
+    convergence_field_datasets={}
+    kappa_name = f'convergence_field_{i}'
+    convergence_field_datasets[kappa_name] = {
+                'data': np.asarray(image_results['kappa']),
+            }
+    kappa_name_nss = f'convergence_field_nss_{i}'
+    convergence_field_datasets[kappa_name_nss] = {
+                'data': np.asarray(image_results['kappa_nss']),
+            }
+
+    return {'datasets': datasets,'image_datasets': image_datasets,'unlensed_image_datasets': unlensed_image_datasets,'kappa_datasets':convergence_field_datasets}
 
 
 def write_simulation_output(hf, i, collected):
@@ -182,3 +206,13 @@ def write_simulation_output(hf, i, collected):
         dset = hf.create_dataset(f'{group_path}/{name}', data=payload['data'])
         for attr_key, attr_val in payload['attrs'].items():
             dset.attrs[attr_key] = np.array(attr_val, dtype=dt)
+    
+    #Unlensed image datasets
+    for name, payload in collected['unlensed_image_datasets'].items():
+        dset = hf.create_dataset(f'{group_path}/{name}', data=payload['data'])
+
+    # Convergence field datasets
+    for name, payload in collected['kappa_datasets'].items():
+        dset = hf.create_dataset(f'{group_path}/{name}', data=payload['data'])
+
+

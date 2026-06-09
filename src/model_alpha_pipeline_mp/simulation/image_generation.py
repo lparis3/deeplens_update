@@ -65,7 +65,20 @@ def simulate(Instrument,kwargs_numerics,band_kwargs,lens_light_kwargs,source_lig
 
         total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'],band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'],band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] ])
 
-        return [image_g,image_r,image_i,total_exposure_times]
+        # convergence is band-independent -> compute once from any band's imSim,
+        # on the same grid as the image so it lines up pixel-for-pixel
+        x_grid, y_grid = imSim_g.Data.pixel_coordinates
+        kappa = imSim_g.LensModel.kappa(x_grid, y_grid, lens_nonlight_kwargs)
+
+        # unlensed source on the same grid, clean (no noise), in e- counts.
+        # de_lensed=True renders the source with no ray-shooting; unconvolved=False
+        # convolves the band PSF so the unlensed image matches the lensed image's PSF
+        # treatment (set unconvolved=True to skip it if the INTERPOL input is already PSF'd).
+        image_g_unlensed = imSim_g.source_surface_brightness(kwargs_source_g, de_lensed=True, unconvolved=False) * band_kwargs[0]['pixel_scale']**2 * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures']
+        image_r_unlensed = imSim_r.source_surface_brightness(kwargs_source_r, de_lensed=True, unconvolved=False) * band_kwargs[1]['pixel_scale']**2 * band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures']
+        image_i_unlensed = imSim_i.source_surface_brightness(kwargs_source_i, de_lensed=True, unconvolved=False) * band_kwargs[2]['pixel_scale']**2 * band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures']
+
+        return [image_g,image_r,image_i,total_exposure_times,kappa,[image_g_unlensed,image_r_unlensed,image_i_unlensed]]
 
     elif Instrument == 'DES':
         sim_g = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[0], kwargs_model=kwargs_model_)
@@ -97,7 +110,20 @@ def simulate(Instrument,kwargs_numerics,band_kwargs,lens_light_kwargs,source_lig
 
         total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'],band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures'],band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures'] ])
 
-        return [image_g,image_r,image_i,total_exposure_times]
+        # convergence is band-independent -> compute once from any band's imSim,
+        # on the same grid as the image so it lines up pixel-for-pixel
+        x_grid, y_grid = imSim_g.Data.pixel_coordinates
+        kappa = imSim_g.LensModel.kappa(x_grid, y_grid, lens_nonlight_kwargs)
+
+        # unlensed source on the same grid, clean (no noise), in e- counts.
+        # de_lensed=True renders the source with no ray-shooting; unconvolved=False
+        # convolves the band PSF so the unlensed image matches the lensed image's PSF
+        # treatment (set unconvolved=True to skip it if the INTERPOL input is already PSF'd).
+        image_g_unlensed = imSim_g.source_surface_brightness(kwargs_source_g, de_lensed=True, unconvolved=False) * band_kwargs[0]['pixel_scale']**2 * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures']
+        image_r_unlensed = imSim_r.source_surface_brightness(kwargs_source_r, de_lensed=True, unconvolved=False) * band_kwargs[1]['pixel_scale']**2 * band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures']
+        image_i_unlensed = imSim_i.source_surface_brightness(kwargs_source_i, de_lensed=True, unconvolved=False) * band_kwargs[2]['pixel_scale']**2 * band_kwargs[2]['exposure_time'] * band_kwargs[2]['num_exposures']
+
+        return [image_g,image_r,image_i,total_exposure_times,kappa,[image_g_unlensed,image_r_unlensed,image_i_unlensed]]
 
     elif Instrument=='Euclid':
         sim_VIS = SimAPI(numpix=numpix, kwargs_single_band=band_kwargs[0], kwargs_model=kwargs_model_)
@@ -105,15 +131,6 @@ def simulate(Instrument,kwargs_numerics,band_kwargs,lens_light_kwargs,source_lig
 
         kwargs_lens_light_r, kwargs_source_r,_ = sim_VIS.magnitude2amplitude(lens_light_kwargs[0], source_light_kwargs[0])
         kwargs_lens_light_i, kwargs_source_i,_ = sim_VIS.magnitude2amplitude(lens_light_kwargs[1], source_light_kwargs[1])
-
-        #Before lensing our r and i band images we will create an approximate VIS band image as well (VIS band ~ equal in r and i)
-        #approximate_lens_magnitude_VIS = combine_ab_magnitudes(kwargs_lens_light_r[0]['magnitude'],kwargs_lens_light_i[0]['magnitude'])
-        #approximate_source_magnitude_VIS = combine_ab_magnitudes(kwargs_source_r[0]['magnitude'],kwargs_source_i[0]['magnitude'])
-        #approximate_lens_image_VIS = kwargs_lens_light_r[0]['image'] + kwargs_lens_light_i[0]['image']
-        #approximate_source_image_VIS = kwargs_source_r[0]['image'] + kwargs_source_i[0]['image']
-        #lens_light_kwargs_VIS = [{'magnitude': approximate_lens_magnitude_VIS, 'image': approximate_lens_image_VIS, 'center_x': kwargs_lens_light_r[0]['center_x'], 'center_y':kwargs_lens_light_r[0]['center_y'], 'phi_G': 0.0, 'scale': kwargs_lens_light_r[0]['scale']}]
-        #source_light_kwargs_VIS = [{'magnitude': approximate_source_magnitude_VIS, 'image': approximate_source_image_VIS, 'center_x': kwargs_source_r[0]['center_x'], 'center_y':kwargs_source_r[0]['center_y'], 'phi_G': 0.0, 'scale': kwargs_source_r[0]['scale']}]
-        #kwargs_lens_light_VIS, kwargs_source_VIS,_ = sim_VIS.magnitude2amplitude(lens_light_kwargs_VIS, source_light_kwargs_VIS)
 
 
         # r and i surface brightnesses are intermediate quantities used
@@ -132,7 +149,20 @@ def simulate(Instrument,kwargs_numerics,band_kwargs,lens_light_kwargs,source_lig
 
         total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures']])
 
-        return [image_VIS, total_exposure_times]
+        # convergence is band-independent -> compute once from the VIS imSim,
+        # on the same grid as the image so it lines up pixel-for-pixel
+        x_grid, y_grid = imSim_VIS.Data.pixel_coordinates
+        kappa = imSim_VIS.LensModel.kappa(x_grid, y_grid, lens_nonlight_kwargs)
+
+        # unlensed source on the same grid, clean (no noise), in e- counts. Mirror the
+        # lensed VIS construction: VIS ~ r + i. de_lensed=True renders the source with no
+        # ray-shooting; unconvolved=False convolves the band PSF so the unlensed image
+        # matches the lensed PSF treatment (set unconvolved=True to skip it if already PSF'd).
+        sb_r_unlensed = imSim_VIS.source_surface_brightness(kwargs_source_r, de_lensed=True, unconvolved=False)
+        sb_i_unlensed = imSim_VIS.source_surface_brightness(kwargs_source_i, de_lensed=True, unconvolved=False)
+        image_VIS_unlensed = (sb_r_unlensed + sb_i_unlensed) * band_kwargs[0]['pixel_scale']**2 * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures']
+
+        return [image_VIS, total_exposure_times, kappa, [image_VIS_unlensed]]
 
 
     elif Instrument == 'Roman_VIS':
@@ -163,7 +193,19 @@ def simulate(Instrument,kwargs_numerics,band_kwargs,lens_light_kwargs,source_lig
 
         total_exposure_times = np.array([band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures'],band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures']])
 
-        return [image_FO62,image_FO87,total_exposure_times]
+        # convergence is band-independent -> compute once from any band's imSim,
+        # on the same grid as the image so it lines up pixel-for-pixel
+        x_grid, y_grid = imSim_FO62.Data.pixel_coordinates
+        kappa = imSim_FO62.LensModel.kappa(x_grid, y_grid, lens_nonlight_kwargs)
+
+        # unlensed source on the same grid, clean (no noise), in e- counts.
+        # de_lensed=True renders the source with no ray-shooting; unconvolved=False
+        # convolves the band PSF so the unlensed image matches the lensed image's PSF
+        # treatment (set unconvolved=True to skip it if the INTERPOL input is already PSF'd).
+        image_FO62_unlensed = imSim_FO62.source_surface_brightness(kwargs_source_FO62, de_lensed=True, unconvolved=False) * band_kwargs[0]['pixel_scale']**2 * band_kwargs[0]['exposure_time'] * band_kwargs[0]['num_exposures']
+        image_FO87_unlensed = imSim_FO87.source_surface_brightness(kwargs_source_FO87, de_lensed=True, unconvolved=False) * band_kwargs[1]['pixel_scale']**2 * band_kwargs[1]['exposure_time'] * band_kwargs[1]['num_exposures']
+
+        return [image_FO62,image_FO87,total_exposure_times,kappa,[image_FO62_unlensed,image_FO87_unlensed]]
 
 
 
@@ -179,9 +221,13 @@ def generate_images(Instrument,setup_results, dlu_1_results,dlu_2_results):
     # num_exposures == 0 (zero total exposure time), which makes the noise model
     # divide by zero and return all-NaN; see observation_builder.instrument_config.
     def _assert_finite(results, label):
-        # layout is [image_band_0, ..., image_band_{N-1}, total_exposure_times];
-        # the final entry is exposure times, so only the image arrays are checked.
-        for b, arr in enumerate(results[:-1]):
+        # layout is [image_band_0, ..., image_band_{N-1}, total_exposure_times, kappa, img_unlensed];
+        # the last three entries are exposure times, the convergence map, and the list of
+        # unlensed images, so only the lensed image arrays are checked. kappa is intentionally
+        # excluded: for a lens centered at (0,0) on an odd grid, a singular profile
+        # (SIS/SIE/EPL) diverges at the central pixel, so a non-finite center pixel is expected.
+        # img_unlensed is also excluded here (it's a list, and it's a clean no-noise product).
+        for b, arr in enumerate(results[:-3]):
             if not np.isfinite(arr).all():
                 finite_frac = np.isfinite(arr).mean()
                 raise ValueError(
@@ -195,25 +241,40 @@ def generate_images(Instrument,setup_results, dlu_1_results,dlu_2_results):
     _assert_finite(sim_results_nss, "img_nss")
 
     SNR = []
-    for i in range(0,len(sim_results)-1):
+    for i in range(0,len(sim_results)-3):
         SNR.append(find_SNR(sim_results[i]))
     SNR = np.array(SNR) #SNR of lensed residual in each band 
 
     sns_diff = []
-    for i in range(0,len(sim_results)-1):
+    for i in range(0,len(sim_results)-3):
         sns_diff.append(sim_results[i]/sim_results_nss[i])
     sns_diff = np.array(sns_diff) #comparison of lensed image with and without subsctructure
 
-    # sim_results layout: [image_band_0, ..., image_band_{N-1}, total_exposure_times]
-    # So all entries except the last are per-band image arrays.
-    img = list(sim_results[:-1])
-    img_nss = list(sim_results_nss[:-1])
-    total_exposure_times = sim_results[-1]
+    # sim_results layout: [image_band_0, ..., image_band_{N-1}, total_exposure_times, kappa, img_unlensed]
+    # So all entries except the last three are per-band lensed image arrays.
+    img = list(sim_results[:-3])
+    img_nss = list(sim_results_nss[:-3])
+    total_exposure_times = sim_results[-3]
 
+    # convergence maps (2d, aligned pixel-for-pixel with the images).
+    # kappa is the full model, kappa_nss the macro-only model; their difference
+    # isolates the substructure convergence -- the kappa-space analog of sns_diff.
+    kappa = sim_results[-2]
+    kappa_nss = sim_results_nss[-2]
+    kappa_sub = kappa - kappa_nss
+
+    # unlensed source per band (clean, no noise), same grid/units as `img`.
+    # It depends only on the source light, not the lens model, so the nss run's
+    # copy is identical; we return the one from the full run.
+    img_unlensed = sim_results[-1]
     return {
         "img": img,
         "img_nss": img_nss,
         "sns_diff": sns_diff,
         "SNR": SNR,
         "tot_exp_times": total_exposure_times,
+        "kappa": kappa,
+        "kappa_nss": kappa_nss,
+        "kappa_sub": kappa_sub,
+        "img_unlensed": img_unlensed,
     }
