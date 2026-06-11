@@ -1,7 +1,7 @@
 run:
   simulations_per_permutation: 3
   n_workers: 3
-  light_profile: INTERPOL
+  light_profile: INTERPOL #(INTERPOL or SERSIC)
   instruments: #(LSST, DES, Euclid, Roman_VIS)
     - Roman_VIS
     - LSST
