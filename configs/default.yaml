@@ -1,11 +1,19 @@
 run:
-  simulations_per_permutation: 1
-  n_workers: 1
+  simulations_per_permutation: 3
+  n_workers: 3
   light_profile: INTERPOL
   instruments: #(LSST, DES, Euclid, Roman_VIS)
     - Roman_VIS
+    - LSST
+    - DES
+    - Euclid
   dm_types: #(CDM, WDM, SIDM, Axion)
+    - CDM
     - SIDM
+    - WDM
+    - Axion
+  nss: False
+
   output_dir: output_data
 
 data:

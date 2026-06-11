@@ -1,5 +1,5 @@
 [project]
-name = "model-alpha"
+name = "new-deeplens-pipeline"
 version = "0.1.0"
 description = "Strong lensing simulation pipeline with normalizing flow sampling"
 authors = [

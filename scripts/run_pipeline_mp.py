@@ -2,8 +2,8 @@
 import yaml
 import h5py
 
-from model_alpha_pipeline_mp.pipeline.parent_pipeline import simulation_parent
-from model_alpha_pipeline_mp.paths.paths import PROJECT_ROOT
+from new_pipeline_mp.pipeline.parent_pipeline import simulation_parent
+from new_pipeline_mp.paths.paths import PROJECT_ROOT
 
 def main():
     # Load config file
@@ -16,7 +16,12 @@ def main():
     instruments = config["run"]["instruments"]
     dm_types = config["run"]["dm_types"]
     light_profile = config["run"]["light_profile"]
-    output_dir = config["run"]["output_dir"] 
+    output_dir = config["run"]["output_dir"]
+    # Whether to also render the macro-only ("no substructure") model. Defaults to
+    # True if the key is absent, preserving previous behaviour. Set `nss: false`
+    # under `run` in configs/default.yaml to skip the nss render (its outputs come
+    # back as None from image_generation).
+    nss = config["run"].get("nss", True)
 
     # Unpack data paths
     hsc_catalog_path = PROJECT_ROOT/config["data"]["hsc_catalog"]
@@ -29,7 +34,8 @@ def main():
         light_profile=light_profile,
         observational_data_path=hsc_catalog_path,
         output_dir=output_dir,
-        n_workers=n_workers
+        n_workers=n_workers,
+        nss=nss
     )
 
 
