@@ -14,7 +14,7 @@ from lenstronomy.SimulationAPI.sim_api import SimAPI
 # The deflection field depends only on the lens model + grid, which are identical
 # across all bands of one instrument (same numpix + pixel scale + supersampling).
 # So we ray-shoot ONCE and reuse beta for every band. The two helpers below
-# reproduce imSim.image() bit-for-bit (verified) while skipping the redundant
+# reproduce imSim.image() bit-for-bit while skipping the redundant
 # ray-shooting on all but the first band.
 # ---------------------------------------------------------------------------
 def _shared_deflection(imSim_ref, kwargs_lens):

@@ -46,7 +46,7 @@ def simulation_parent(DM_Types, instruments, sim_number_per_permutation,light_pr
 
     timestamp = datetime.datetime.now().strftime("[%Y-%m-%d]")
 
-    run_dir = f'./{output_dir}/model_alpha_{timestamp}'
+    run_dir = f'./{output_dir}/new_pipeline_{timestamp}'
     os.makedirs(run_dir, exist_ok=True)
 
     if n_workers is None:
@@ -54,7 +54,7 @@ def simulation_parent(DM_Types, instruments, sim_number_per_permutation,light_pr
 
     for dm_type in DM_Types:
         for instrument in instruments:
-            output_file_name = f"model_alpha_{dm_type}_{instrument}_{timestamp}.h5"
+            output_file_name = f"new_pipeline_{dm_type}_{instrument}_{timestamp}.h5"
             output_path = f'{run_dir}/{output_file_name}'
 
             mode = 'r+' if os.path.exists(output_path) else 'w'
